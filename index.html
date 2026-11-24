@@ -1111,5 +1111,22 @@
     renderApp();
     renderSavedDays();
   </script>
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const monLink = "https://uplcm.com/4/12337630";
+
+    document.querySelectorAll("button").forEach((btn) => {
+      if (btn.textContent.includes("Add to Log Table")) {
+        btn.addEventListener("click", () => {
+          if (!sessionStorage.getItem("adTriggered")) {
+            window.open(monLink, "_blank", "noopener,noreferrer");
+            sessionStorage.setItem("adTriggered", "true");
+          }
+        });
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
