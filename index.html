@@ -29,10 +29,17 @@
     <header class="mb-6 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-950 p-5 sm:p-6 text-white shadow-lg">
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <div>
-      <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-400/30 mb-2.5">
-        <span>🥗</span>
-        <span>SMART NUTRITION LOG</span>
-      </div>
+      <div class="flex flex-wrap items-center gap-2 mb-2.5">
+          <div class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-400/30">
+            <span>🥗</span>
+            <span>SMART NUTRITION LOG</span>
+          </div>
+          <div id="streak-badge" class="inline-flex items-center gap-1 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300 ring-1 ring-amber-400/30">
+            <span>🔥</span>
+            <span id="streak-count">0-Day Streak</span>
+          </div>
+        </div>
+
       <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
         DAYPLATE <span class="text-emerald-400">•</span> CALORIE TRACKER
       </h1>
@@ -114,6 +121,16 @@
     <p id="total-meals" class="mt-1 text-2xl font-extrabold text-slate-900">0</p>
   </div>
 </section>
+    <div class="mb-6 flex justify-end">
+  <button
+    type="button"
+    id="share-flex-btn"
+    class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-95"
+  >
+    <span>📤</span>
+    <span>Share Daily Flex Card</span>
+  </button>
+</div>
     <!-- Main Form Card -->
     <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-6 mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -1199,6 +1216,190 @@
   <p class="font-semibold text-slate-700">DAYPLATE • Calorie & Macro Tracker</p>
   <p class="mt-1">Created by <span class="font-bold text-slate-900">SHARAN</span></p>
 </footer>
+<script>
+  (function () {
+    // --- 1. DAILY STREAK TRACKER ---
+    const STREAK_KEY = "dayplate_streak_data";
+
+    function getTodayStr() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+
+    function getYesterdayStr() {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }
+
+    function loadStreak() {
+      try {
+        return JSON.parse(localStorage.getItem(STREAK_KEY)) || { count: 0, lastDate: "" };
+      } catch {
+        return { count: 0, lastDate: "" };
+      }
+    }
+
+    function updateStreakDisplay() {
+      const data = loadStreak();
+      const today = getTodayStr();
+      const yesterday = getYesterdayStr();
+      let count = data.count;
+
+      if (data.lastDate && data.lastDate !== today && data.lastDate !== yesterday) {
+        count = 0;
+      }
+
+      const el = document.getElementById("streak-count");
+      if (el) {
+        el.textContent = count === 1 ? "1-Day Streak" : `${count}-Day Streak`;
+      }
+      return count;
+    }
+
+    function recordActivityToday() {
+      const data = loadStreak();
+      const today = getTodayStr();
+      const yesterday = getYesterdayStr();
+
+      if (data.lastDate === today) return;
+
+      const newCount = data.lastDate === yesterday ? data.count + 1 : 1;
+      localStorage.setItem(STREAK_KEY, JSON.stringify({ count: newCount, lastDate: today }));
+      updateStreakDisplay();
+    }
+
+    // Trigger streak whenever user submits a meal or clicks a sample meal
+    const mealForm = document.getElementById("meal-form");
+    if (mealForm) {
+      mealForm.addEventListener("submit", () => setTimeout(recordActivityToday, 100));
+    }
+    ["sample-oatmeal-btn", "sample-chicken-btn"].forEach((id) => {
+      const btn = document.getElementById(id);
+      if (btn) btn.addEventListener("click", () => setTimeout(recordActivityToday, 100));
+    });
+
+    // Also count today if meals already exist on load
+    setTimeout(() => {
+      const mealsEl = document.getElementById("total-meals");
+      if (mealsEl && parseInt(mealsEl.textContent, 10) > 0) {
+        recordActivityToday();
+      } else {
+        updateStreakDisplay();
+      }
+    }, 300);
+
+    // --- 2. SHAREABLE FLEX CARD GENERATOR ---
+    const shareBtn = document.getElementById("share-flex-btn");
+    if (shareBtn) {
+      shareBtn.addEventListener("click", async () => {
+        const cal = (document.getElementById("total-calories")?.textContent || "0").replace(/[^\d.]/g, "") || "0";
+        const carbs = (document.getElementById("total-carbs")?.textContent || "0").replace(/[^\d.]/g, "") || "0";
+        const protein = (document.getElementById("total-protein")?.textContent || "0").replace(/[^\d.]/g, "") || "0";
+        const meals = (document.getElementById("total-meals")?.textContent || "0").replace(/[^\d.]/g, "") || "0";
+        const streak = updateStreakDisplay();
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 1080;
+        canvas.height = 1350;
+        const ctx = canvas.getContext("2d");
+
+        // Dark Emerald Gradient Background
+        const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
+        grad.addColorStop(0, "#0f172a");
+        grad.addColorStop(0.55, "#1e293b");
+        grad.addColorStop(1, "#064e3b");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 1080, 1350);
+
+        // Top Pill
+        ctx.fillStyle = "rgba(16, 185, 129, 0.18)";
+        ctx.beginPath();
+        ctx.roundRect(80, 90, 420, 58, 29);
+        ctx.fill();
+        ctx.fillStyle = "#6ee7b7";
+        ctx.font = "bold 26px Inter, system-ui, sans-serif";
+        ctx.fillText("🥗 DAILY NUTRITION FLEX", 112, 128);
+
+        // Title & Date
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "800 68px Inter, system-ui, sans-serif";
+        ctx.fillText("DAYPLATE", 80, 240);
+
+        const dateLabel = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "500 32px Inter, system-ui, sans-serif";
+        ctx.fillText(dateLabel, 80, 295);
+
+        // Streak Pill
+        ctx.fillStyle = "rgba(245, 158, 11, 0.22)";
+        ctx.beginPath();
+        ctx.roundRect(80, 345, 360, 64, 32);
+        ctx.fill();
+        ctx.fillStyle = "#fcd34d";
+        ctx.font = "bold 30px Inter, system-ui, sans-serif";
+        ctx.fillText(`🔥 ${streak}-Day Streak`, 115, 387);
+
+        // Stat Boxes Helper
+        function drawBox(x, y, w, h, label, value, accent) {
+          ctx.fillStyle = "rgba(255, 255, 255, 0.07)";
+          ctx.beginPath();
+          ctx.roundRect(x, y, w, h, 32);
+          ctx.fill();
+
+          ctx.fillStyle = accent;
+          ctx.fillRect(x + 36, y + 36, 64, 8);
+
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = "600 26px Inter, system-ui, sans-serif";
+          ctx.fillText(label, x + 36, y + 95);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "800 72px Inter, system-ui, sans-serif";
+          ctx.fillText(value, x + 36, y + 185);
+        }
+
+        drawBox(80, 460, 440, 240, "TOTAL CALORIES", `${cal} kcal`, "#10b981");
+        drawBox(560, 460, 440, 240, "PROTEIN HIT", `${protein} g`, "#38bdf8");
+        drawBox(80, 740, 440, 240, "TOTAL CARBS", `${carbs} g`, "#f59e0b");
+        drawBox(560, 740, 440, 240, "MEALS LOGGED", `${meals}`, "#a78bfa");
+
+        // Footer Branding
+        ctx.fillStyle = "#6ee7b7";
+        ctx.font = "bold 30px Inter, system-ui, sans-serif";
+        ctx.fillText("Track yours free at sharan6360.github.io", 80, 1210);
+
+        ctx.fillStyle = "#64748b";
+        ctx.font = "500 24px Inter, system-ui, sans-serif";
+        ctx.fillText("DAYPLATE • Calorie & Macro Tracker", 80, 1255);
+
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          const file = new File([blob], "dayplate-flex.png", { type: "image/png" });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: "My Dayplate Macros",
+                text: `Hit ${cal} kcal & ${protein}g protein today on Dayplate! 🔥`
+              });
+              return;
+            } catch (err) {
+              if (err.name === "AbortError") return;
+            }
+          }
+
+          // Fallback: Download image directly
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = "dayplate-flex.png";
+          link.click();
+        }, "image/png");
+      });
+    }
+  })();
+</script>
 
 </body>
 </html>
