@@ -1135,6 +1135,61 @@
     });
   });
 </script>
+<!-- Quick Feedback Button -->
+<button id="fb-open" type="button" aria-label="Send Feedback"
+  class="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg transition hover:bg-slate-800 active:scale-95">
+  <span>💬</span>
+  <span>Feedback</span>
+</button>
+
+<!-- Quick Feedback Modal -->
+<div id="fb-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4">
+  <div class="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
+    <div class="flex items-center justify-between">
+      <h3 class="text-base font-semibold text-slate-900">Send Quick Feedback</h3>
+      <button id="fb-close" type="button" class="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600">✕</button>
+    </div>
+    <p class="mt-1 text-xs text-slate-500">Found a bug or have an idea for Dayplate? Let me know!</p>
+
+    <textarea id="fb-text" rows="3" placeholder="Type your thought here..."
+      class="mt-3 w-full rounded-xl border border-slate-200 p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-slate-900 focus:outline-none"></textarea>
+
+    <button id="fb-send-mail" type="button"
+      class="mt-3 w-full rounded-xl bg-slate-900 py-2.5 text-xs font-semibold text-white transition hover:bg-slate-800">
+      Send Feedback via Email
+    </button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const EMAIL_ADDRESS = "sharan.r6360@gmail.com";
+    const modal = document.getElementById("fb-modal");
+    const text = document.getElementById("fb-text");
+
+    document.getElementById("fb-open").onclick = () => {
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      text.focus();
+    };
+
+    const closeModal = () => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    };
+
+    document.getElementById("fb-close").onclick = closeModal;
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+
+    document.getElementById("fb-send-mail").onclick = () => {
+      const msg = text.value.trim();
+      const url = `mailto:${EMAIL_ADDRESS}?subject=${encodeURIComponent("Dayplate Feedback")}&body=${encodeURIComponent(msg)}`;
+      window.location.href = url;
+      text.value = "";
+      closeModal();
+    };
+  })();
+</script>
 
 </body>
 </html>
