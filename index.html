@@ -560,7 +560,7 @@
       setAiStatus('Estimating calories and macros...');
 
       try {
-        const response = await fetch('https://workers.dev', {
+        const response = await fetch('https://dayplate-scan.sharan-r6360.workers.dev', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ imageBase64, mimeType })
