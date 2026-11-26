@@ -1423,6 +1423,10 @@
       });
     }
   })();
+  if (localStorage.getItem('dayplate_owner') === 'true') {
+  document.getElementById('owner-badge')?.classList.remove('hidden');
+}
+
 </script>
 
 </body>
