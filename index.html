@@ -71,14 +71,6 @@
         Snap a photo of your meal or log macros in seconds. Track daily calories, carbs, and protein—and save your favorite days.
       </p>
     </div>
-
-    <button
-      type="button"
-      id="toggle-ai-settings-btn"
-      class="self-start sm:self-center shrink-0 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-medium text-white backdrop-blur-xs ring-1 ring-white/20 transition hover:bg-white/20"
-    >
-      ⚙️ AI Photo Settings
-    </button>
   </div>
 </header>
     <div style="text-align:center; margin-bottom: 16px;">
@@ -87,46 +79,7 @@
     🥗 Explore Healthy Meal Ideas & Offers
   </a>
 </div>
-
-
-    <!-- Collapsible AI Settings Panel -->
-    <section id="ai-settings-panel" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 mb-6">
-      <div class="flex flex-col sm:flex-row sm:items-end gap-3">
-        <div class="flex-1">
-          <label for="gemini-api-key" class="block text-sm font-medium text-slate-700 mb-1">
-            Gemini API Key (for automatic photo calorie counting)
-          </label>
-          <input
-            id="gemini-api-key"
-            type="password"
-            placeholder="Paste your Gemini API key (AIza...)"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-          />
-          <p class="text-xs text-slate-500 mt-1">
-            Saved only in this browser's localStorage. Without a key, you can still upload photos and enter macros manually.
-          </p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            id="save-api-key-btn"
-            class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition"
-          >
-            Save Key
-          </button>
-          <button
-            type="button"
-            id="clear-api-key-btn"
-            class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-medium transition"
-          >
-            Clear
-          </button>
-        </div>
-      </div>
-      <p id="api-key-status" class="hidden text-xs font-medium text-emerald-700 mt-2"></p>
-    </section>
-
-    <!-- Daily Summary Cards -->
+       <!-- Daily Summary Cards -->
     <section aria-label="Daily Totals" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
   <div class="bg-white rounded-xl border border-slate-200 border-t-4 border-t-emerald-500 p-4 shadow-sm">
     <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Calories</p>
@@ -465,7 +418,6 @@
 
   <script>
     const STORAGE_KEY = 'calorie_macro_logger_meals_v1';
-    const API_KEY_STORAGE_KEY = 'calorie_macro_logger_api_key_v1';
     const SAVED_DAYS_STORAGE_KEY = 'calorie_macro_logger_saved_days_v1';
 
     // Load saved meals, saved days, and optional API key from localStorage
@@ -476,13 +428,6 @@
     let filterFavoritesOnly = false;
 
     // Grab HTML elements we need to read or update
-    const toggleAiSettingsBtn = document.getElementById('toggle-ai-settings-btn');
-    const aiSettingsPanel = document.getElementById('ai-settings-panel');
-    const geminiApiKeyInput = document.getElementById('gemini-api-key');
-    const saveApiKeyBtn = document.getElementById('save-api-key-btn');
-    const clearApiKeyBtn = document.getElementById('clear-api-key-btn');
-    const apiKeyStatus = document.getElementById('api-key-status');
-
     const mealForm = document.getElementById('meal-form');
     const photoInput = document.getElementById('meal-photo');
     const photoDropzone = document.getElementById('photo-dropzone');
@@ -550,49 +495,9 @@
         storageNotice.classList.remove('hidden');
       }
     }
-
-    function loadApiKey() {
-      try {
-        return localStorage.getItem(API_KEY_STORAGE_KEY) || '';
-      } catch (err) {
-        return '';
-      }
-    }
-
     // Default the End-of-Day date picker to today
     dayLogDateInput.value = new Date().toISOString().slice(0, 10);
-
-    // Initialize API key input from localStorage
-    geminiApiKeyInput.value = loadApiKey();
-
-    toggleAiSettingsBtn.addEventListener('click', () => {
-      aiSettingsPanel.classList.toggle('hidden');
-    });
-
-    saveApiKeyBtn.addEventListener('click', () => {
-      const key = geminiApiKeyInput.value.trim();
-      try {
-        localStorage.setItem(API_KEY_STORAGE_KEY, key);
-        apiKeyStatus.textContent = key ? 'API key saved in this browser.' : 'API key cleared.';
-        apiKeyStatus.classList.remove('hidden');
-      } catch (err) {
-        apiKeyStatus.textContent = 'Could not save API key to browser storage.';
-        apiKeyStatus.classList.remove('hidden');
-      }
-    });
-
-    clearApiKeyBtn.addEventListener('click', () => {
-      geminiApiKeyInput.value = '';
-      try {
-        localStorage.removeItem(API_KEY_STORAGE_KEY);
-      } catch (err) {
-        // Ignore storage errors
-      }
-      apiKeyStatus.textContent = 'API key cleared.';
-      apiKeyStatus.classList.remove('hidden');
-    });
-
-    // Open file picker when clicking the dropzone
+   // Open file picker when clicking the dropzone
     photoDropzone.addEventListener('click', (event) => {
       if (event.target !== clearPhotoBtn) {
         photoInput.click();
