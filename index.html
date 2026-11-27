@@ -60,6 +60,19 @@
     </div>
   </div>
 </header>
+        <!-- Weekly Day Switcher Strip -->
+    <div class="mb-4 rounded-2xl bg-white px-2 py-3 shadow-sm border border-slate-100">
+      <div class="flex items-center justify-between gap-1">
+        <button type="button" id="week-prev-btn" class="p-1.5 text-slate-400 hover:text-slate-700 active:scale-95 transition" aria-label="Previous week">
+          &lsaquo;
+        </button>
+        <div id="week-days-grid" class="grid flex-1 grid-cols-7 gap-1 text-center"></div>
+        <button type="button" id="week-next-btn" class="p-1.5 text-slate-400 hover:text-slate-700 active:scale-95 transition" aria-label="Next week">
+          &rsaquo;
+        </button>
+      </div>
+    </div>
+
         <!-- Daily Water Intake Tracker -->
     <div class="mb-6 rounded-2xl bg-white p-4 shadow-sm border border-sky-100">
       <div class="flex flex-wrap items-center justify-between gap-2">
@@ -433,7 +446,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'calorie_macro_logger_meals_v1';
+    let STORAGE_KEY = 'calorie_macro_logger_meals_v1';
     const SAVED_DAYS_STORAGE_KEY = 'calorie_macro_logger_saved_days_v1';
 
     // Load saved meals, saved days, and optional API key from localStorage
@@ -854,6 +867,7 @@
 
     // Re-render summary cards and Today's Food Log table
     function renderApp() {
+            if (window.renderWeekStrip) window.renderWeekStrip();
       const totals = computeTotals(meals);
 
       totalCaloriesEl.innerHTML = `${Math.round(totals.calories)} <span class="text-sm font-normal text-slate-500">kcal</span>`;
@@ -1062,6 +1076,100 @@
     // Render saved meals and saved days on initial page load
     renderApp();
     renderSavedDays();
+        // --- WEEKLY DAY SWITCHER + CIRCULAR PROGRESS RINGS ---
+    const BASE_MEALS_KEY = STORAGE_KEY;
+    const weekGridEl = document.getElementById('week-days-grid');
+    const weekPrevBtn = document.getElementById('week-prev-btn');
+    const weekNextBtn = document.getElementById('week-next-btn');
+
+    function formatIsoDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }
+
+    const realTodayStr = formatIsoDate(new Date());
+    let selectedDateStr = realTodayStr;
+    let weekOffset = 0;
+
+    function getMealsKeyForDate(dateStr) {
+      return dateStr === realTodayStr ? BASE_MEALS_KEY : BASE_MEALS_KEY + '_' + dateStr;
+    }
+
+    function applyOption3AutoFill(dateStr) {
+      const parts = dateStr.split('-');
+      const d = new Date(Number(parts.at(0)), Number(parts.at(1)) - 1, Number(parts.at(2)));
+      const label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      if (dayLogNameInput) dayLogNameInput.value = label;
+      if (dayLogDateInput) dayLogDateInput.value = dateStr;
+    }
+
+    function selectCalendarDate(dateStr) {
+      selectedDateStr = dateStr;
+      STORAGE_KEY = getMealsKeyForDate(dateStr);
+      meals = loadJson(STORAGE_KEY, []);
+      applyOption3AutoFill(dateStr);
+      renderApp();
+      if (window.setWaterDate) window.setWaterDate(dateStr);
+    }
+
+    window.renderWeekStrip = function () {
+      if (!weekGridEl) return;
+      const now = new Date();
+      const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() + weekOffset * 7);
+      const dayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+      const r = 15;
+      const circ = 2 * Math.PI * r;
+      let html = '';
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(sunday.getFullYear(), sunday.getMonth(), sunday.getDate() + i);
+        const dateStr = formatIsoDate(d);
+        const isToday = dateStr === realTodayStr;
+        const isSelected = dateStr === selectedDateStr;
+        const dayMeals = dateStr === selectedDateStr ? meals : loadJson(getMealsKeyForDate(dateStr), []);
+        const kcal = dayMeals.reduce((sum, m) => sum + (Number(m.calories) || 0), 0);
+        const pct = Math.min(1, kcal / 2000);
+        const offset = (circ * (1 - pct)).toFixed(1);
+
+        let ringColor = '#e2e8f0';
+        if (pct >= 0.95) ringColor = '#10b981';
+        else if (pct >= 0.5) ringColor = '#f59e0b';
+        else if (pct > 0) ringColor = '#34d399';
+
+        const pillBg = isSelected ? 'bg-emerald-50 ring-1 ring-emerald-200' : 'hover:bg-slate-50';
+        const topLabel = isToday ? 'Today' : dayLabels.at(i);
+        const topColor = isToday ? 'text-emerald-700 font-bold' : 'text-slate-400 font-medium';
+        const dashAttr = pct === 0 ? 'stroke-dasharray="3 3"' : '';
+
+        html += '<button type="button" data-cal-date="' + dateStr + '" class="flex flex-col items-center rounded-xl py-1.5 px-0.5 transition ' + pillBg + '">';
+        html += '<span class="text-[11px] leading-tight ' + topColor + '">' + topLabel + '</span>';
+        html += '<div class="relative mt-1 flex h-9 w-9 items-center justify-center">';
+        html += '<svg class="h-9 w-9 -rotate-90" viewBox="0 0 36 36">';
+        html += '<circle cx="18" cy="18" r="' + r + '" fill="none" stroke="#e2e8f0" stroke-width="2.5" ' + dashAttr + ' />';
+        if (pct > 0) {
+          html += '<circle cx="18" cy="18" r="' + r + '" fill="none" stroke="' + ringColor + '" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="' + circ.toFixed(1) + '" stroke-dashoffset="' + offset + '" />';
+        }
+        html += '</svg>';
+        html += '<span class="absolute text-xs font-bold text-slate-800">' + d.getDate() + '</span>';
+        html += '</div></button>';
+      }
+
+      weekGridEl.innerHTML = html;
+    };
+
+    if (weekGridEl) {
+      weekGridEl.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (btn && btn.dataset.calDate) selectCalendarDate(btn.dataset.calDate);
+      });
+    }
+    if (weekPrevBtn) weekPrevBtn.addEventListener('click', () => { weekOffset -= 1; window.renderWeekStrip(); });
+    if (weekNextBtn) weekNextBtn.addEventListener('click', () => { weekOffset += 1; window.renderWeekStrip(); });
+
+    applyOption3AutoFill(realTodayStr);
+    window.renderWeekStrip();
   </script>
   <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -1211,7 +1319,12 @@
       }
     }, 300);
             // --- 1B. DAILY WATER INTAKE TRACKER ---
-        const WATER_KEY = "dayplate_water_" + getTodayStr();
+                let WATER_KEY = "dayplate_water_" + getTodayStr();
+        window.setWaterDate = function (dateStr) {
+          WATER_KEY = "dayplate_water_" + dateStr;
+          updateWaterUI();
+        };
+
         const WATER_GOAL_ML = 2000;
 
         function loadWaterMl() {
