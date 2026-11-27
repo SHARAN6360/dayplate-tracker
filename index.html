@@ -60,12 +60,33 @@
     </div>
   </div>
 </header>
-    <div style="text-align:center; margin-bottom: 16px;">
-  <a href="https://uplcm.com/4/12337630" target="_blank" rel="noopener noreferrer"
-     style="display:inline-block; background:#10b981; color:#ffffff; padding:10px 20px; border-radius:8px; text-decoration:none; font-weight:600; font-size:14px;">
-    🥗 Explore Healthy Meal Ideas & Offers
-  </a>
-</div>
+        <!-- Daily Water Intake Tracker -->
+    <div class="mb-6 rounded-2xl bg-white p-4 shadow-sm border border-sky-100">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5">
+          <span class="text-xl">💧</span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Daily Water Intake</p>
+            <p class="text-sm font-bold text-slate-800">
+              <span id="water-glasses">0</span> / 8 glasses
+              <span class="font-normal text-slate-500">(<span id="water-liters">0.00</span> L)</span>
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" id="water-minus-btn" class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 active:scale-95 transition">
+            - 250ml
+          </button>
+          <button type="button" id="water-plus-btn" class="rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-600 active:scale-95 transition">
+            + 250ml
+          </button>
+        </div>
+      </div>
+      <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div id="water-bar" class="h-full rounded-full bg-sky-500 transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+
        <!-- Daily Summary Cards -->
     <section aria-label="Daily Totals" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
   <div class="bg-white rounded-xl border border-slate-200 border-t-4 border-t-emerald-500 p-4 shadow-sm">
@@ -1171,6 +1192,50 @@
         updateStreakDisplay();
       }
     }, 300);
+            // --- 1B. DAILY WATER INTAKE TRACKER ---
+        const WATER_KEY = "dayplate_water_" + getTodayStr();
+        const WATER_GOAL_ML = 2000;
+
+        function loadWaterMl() {
+          const saved = localStorage.getItem(WATER_KEY);
+          return saved ? parseInt(saved, 10) : 0;
+        }
+
+        function updateWaterUI() {
+          const ml = loadWaterMl();
+          const glasses = Math.round(ml / 250);
+          const liters = (ml / 1000).toFixed(2);
+          const pct = Math.min(100, Math.round((ml / WATER_GOAL_ML) * 100));
+
+          const glassesEl = document.getElementById("water-glasses");
+          const litersEl = document.getElementById("water-liters");
+          const barEl = document.getElementById("water-bar");
+
+          if (glassesEl) glassesEl.textContent = glasses;
+          if (litersEl) litersEl.textContent = liters;
+          if (barEl) barEl.style.width = pct + "%";
+        }
+
+        const waterPlusBtn = document.getElementById("water-plus-btn");
+        const waterMinusBtn = document.getElementById("water-minus-btn");
+
+        if (waterPlusBtn) {
+          waterPlusBtn.addEventListener("click", () => {
+            const nextMl = loadWaterMl() + 250;
+            localStorage.setItem(WATER_KEY, String(nextMl));
+            updateWaterUI();
+          });
+        }
+
+        if (waterMinusBtn) {
+          waterMinusBtn.addEventListener("click", () => {
+            const nextMl = Math.max(0, loadWaterMl() - 250);
+            localStorage.setItem(WATER_KEY, String(nextMl));
+            updateWaterUI();
+          });
+        }
+
+        updateWaterUI();
 
     // --- 2. SHAREABLE FLEX CARD GENERATOR ---
     const shareBtn = document.getElementById("share-flex-btn");
