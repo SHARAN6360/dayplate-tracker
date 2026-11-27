@@ -121,20 +121,28 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <h2 class="text-lg font-semibold text-slate-900">Log a Meal</h2>
         <div class="flex flex-wrap gap-2">
-          <button
+                    <button
             type="button"
-            id="sample-oatmeal-btn"
-            class="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+            id="sample-eggs-btn"
+            class="text-xs font-medium px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition"
           >
-            Try Sample: Oatmeal
+            🥚 4 Eggs & 2 Toast
           </button>
           <button
             type="button"
             id="sample-chicken-btn"
-            class="text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+            class="text-xs font-medium px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition"
           >
-            Try Sample: Chicken Bowl
+            🍗 Chicken & Rice
           </button>
+          <button
+            type="button"
+            id="sample-paneer-btn"
+            class="text-xs font-medium px-3 py-1.5 rounded-lg bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100 transition"
+          >
+            🧀 Paneer & 2 Roti
+          </button>
+
         </div>
       </div>
 
@@ -480,8 +488,10 @@
     const filterFavoritesBtn = document.getElementById('filter-favorites-btn');
     const resetFiltersBtn = document.getElementById('reset-filters-btn');
 
-    const sampleOatmealBtn = document.getElementById('sample-oatmeal-btn');
+    const sampleEggsBtn = document.getElementById('sample-eggs-btn');
     const sampleChickenBtn = document.getElementById('sample-chicken-btn');
+    const samplePaneerBtn = document.getElementById('sample-paneer-btn');
+
 
     function loadJson(key, fallback) {
       try {
@@ -594,19 +604,27 @@
     });
 
     // Quick sample buttons so beginners can test immediately
-    sampleOatmealBtn.addEventListener('click', () => {
-      mealNameInput.value = 'Oatmeal with Berries';
-      mealCaloriesInput.value = '320';
-      mealCarbsInput.value = '54';
-      mealProteinInput.value = '11';
+        sampleEggsBtn.addEventListener('click', () => {
+      mealNameInput.value = '4 Boiled Eggs & 2 Toast';
+      mealCaloriesInput.value = '420';
+      mealCarbsInput.value = '30';
+      mealProteinInput.value = '28';
       hideError();
     });
 
     sampleChickenBtn.addEventListener('click', () => {
-      mealNameInput.value = 'Grilled Chicken Rice Bowl';
-      mealCaloriesInput.value = '540';
-      mealCarbsInput.value = '58';
+      mealNameInput.value = 'Chicken Breast & Rice';
+      mealCaloriesInput.value = '520';
+      mealCarbsInput.value = '55';
       mealProteinInput.value = '42';
+      hideError();
+    });
+
+    samplePaneerBtn.addEventListener('click', () => {
+      mealNameInput.value = 'Paneer Bhurji & 2 Roti';
+      mealCaloriesInput.value = '480';
+      mealCarbsInput.value = '44';
+      mealProteinInput.value = '24';
       hideError();
     });
 
@@ -1178,7 +1196,7 @@
     if (mealForm) {
       mealForm.addEventListener("submit", () => setTimeout(recordActivityToday, 100));
     }
-    ["sample-oatmeal-btn", "sample-chicken-btn"].forEach((id) => {
+            ["sample-eggs-btn", "sample-chicken-btn", "sample-paneer-btn"].forEach((id) => {
       const btn = document.getElementById(id);
       if (btn) btn.addEventListener("click", () => setTimeout(recordActivityToday, 100));
     });
