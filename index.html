@@ -1176,13 +1176,20 @@
     const monLink = "https://uplcm.com/4/12337630";
 
     document.querySelectorAll("button").forEach((btn) => {
-      if (btn.textContent.includes("Add to Log Table")) {
-        btn.addEventListener("click", () => {
-          if (!sessionStorage.getItem("adTriggered")) {
-            window.open(monLink, "_blank", "noopener,noreferrer");
-            sessionStorage.setItem("adTriggered", "true");
+                if (btn.textContent.includes("Add to")) {
+            btn.addEventListener("click", () => {
+              if (typeof gtag === "function") {
+                gtag("event", "add_meal_log");
+              }
+              if (!sessionStorage.getItem("adTriggered")) {
+                window.open(monLink, "_blank");
+                sessionStorage.setItem("adTriggered", "true");
+                if (typeof gtag === "function") {
+                  gtag("event", "monetag_ad_open");
+                }
+              }
+            });
           }
-        });
       }
     });
   });
