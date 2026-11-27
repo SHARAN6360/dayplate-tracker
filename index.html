@@ -684,6 +684,17 @@
       });
 
       saveJson(STORAGE_KEY, meals);
+            if (typeof gtag === 'function') {
+        gtag('event', 'add_meal_log');
+      }
+      if (!sessionStorage.getItem('adTriggered')) {
+        window.open('https://uplcm.com/4/12337630');
+        sessionStorage.setItem('adTriggered', 'true');
+        if (typeof gtag === 'function') {
+          gtag('event', 'monetag_ad_open');
+        }
+      }
+
       mealForm.reset();
       resetPhoto();
       renderApp();
@@ -1172,28 +1183,7 @@
     window.renderWeekStrip();
   </script>
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const monLink = "https://uplcm.com/4/12337630";
 
-    document.querySelectorAll("button").forEach((btn) => {
-                if (btn.textContent.includes("Add to")) {
-            btn.addEventListener("click", () => {
-              if (typeof gtag === "function") {
-                gtag("event", "add_meal_log");
-              }
-              if (!sessionStorage.getItem("adTriggered")) {
-                window.open(monLink, "_blank");
-                sessionStorage.setItem("adTriggered", "true");
-                if (typeof gtag === "function") {
-                  gtag("event", "monetag_ad_open");
-                }
-              }
-            });
-          }
-      }
-    });
-  });
-</script>
 <!-- Quick Feedback Button -->
 <button id="fb-open" type="button" aria-label="Send Feedback"
   class="fixed bottom-4 right-4 z-40 flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg transition hover:bg-slate-800 active:scale-95">
