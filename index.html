@@ -1350,11 +1350,17 @@
         const waterPlusBtn = document.getElementById("water-plus-btn");
         const waterMinusBtn = document.getElementById("water-minus-btn");
 
-        if (waterPlusBtn) {
+                if (waterPlusBtn) {
           waterPlusBtn.addEventListener("click", () => {
             const nextMl = loadWaterMl() + 250;
             localStorage.setItem(WATER_KEY, String(nextMl));
             updateWaterUI();
+            if (typeof gtag === "function") {
+              gtag("event", "water_intake_update", {
+                action: "add_250ml",
+                total_ml: nextMl
+              });
+            }
           });
         }
 
@@ -1363,9 +1369,14 @@
             const nextMl = Math.max(0, loadWaterMl() - 250);
             localStorage.setItem(WATER_KEY, String(nextMl));
             updateWaterUI();
+            if (typeof gtag === "function") {
+              gtag("event", "water_intake_update", {
+                action: "remove_250ml",
+                total_ml: nextMl
+              });
+            }
           });
         }
-
         updateWaterUI();
 
     // --- 2. SHAREABLE FLEX CARD GENERATOR ---
